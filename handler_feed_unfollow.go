@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/3mmarx/gator/internal/database"
@@ -10,13 +9,13 @@ import (
 
 func handlerUnfollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 1 {
-		return errors.New("Usage: gator unfollow <url>")
+		return fmt.Errorf("usage: gator unfollow <url>")
 	}
 
-	feedUrl := cmd.Args[0]
-	feed, err := s.db.GetFeedByURL(context.Background(), feedUrl)
+	feedURL := cmd.Args[0]
+	feed, err := s.db.GetFeedByURL(context.Background(), feedURL)
 	if err != nil {
-		return fmt.Errorf("failed to unfollow feed: %w", err)
+		return fmt.Errorf("could not find feed %q: %w", feedURL, err)
 	}
 
 	err = s.db.DeleteFeedFollow(context.Background(), database.DeleteFeedFollowParams{
@@ -24,10 +23,10 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 		FeedID: feed.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to unfollow feed: %w", err)
+		return fmt.Errorf("could not unfollow feed %q: %w", feed.Name, err)
 	}
 
-	fmt.Println("unfollowed successfully!")
+	fmt.Printf("Unfollowed %q.\n", feed.Name)
 
 	return nil
 }

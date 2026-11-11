@@ -14,17 +14,12 @@ type commands struct {
 }
 
 func (c *commands) run(s *state, cmd command) error {
-	command, ok := c.handlers[cmd.Name]
+	handler, ok := c.handlers[cmd.Name]
 	if !ok {
-		return fmt.Errorf("command not found")
+		return fmt.Errorf("unknown command %q", cmd.Name)
 	}
 
-	err := command(s, cmd)
-	if err != nil {
-		return fmt.Errorf("failed to run the command: %s", err)
-	}
-
-	return nil
+	return handler(s, cmd)
 }
 
 func (c *commands) register(name string, f func(*state, command) error) {

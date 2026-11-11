@@ -8,18 +8,18 @@ import (
 )
 
 func handlerFollowing(s *state, cmd command, user database.User) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
-		return fmt.Errorf("failed to fetch following feeds: %s", err)
+		return fmt.Errorf("could not load current user %q: %w", s.cfg.CurrentUserName, err)
 	}
 
-	followedFeeds, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	followedFeeds, err := s.db.GetFeedFollowsForUser(context.Background(), currentUser.ID)
 	if err != nil {
-		return fmt.Errorf("failed to fetch following feeds: %s", err)
+		return fmt.Errorf("could not list followed feeds: %w", err)
 	}
 
 	if len(followedFeeds) == 0 {
-		fmt.Println("no following feeds")
+		fmt.Println("You are not following any feeds.")
 		return nil
 	}
 

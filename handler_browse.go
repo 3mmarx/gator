@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/3mmarx/gator/internal/database"
 )
@@ -13,11 +12,10 @@ func handlerBrowse(s *state, cmd command, user database.User) error {
 	var limit int32 = 2
 
 	if len(cmd.Args) > 0 {
-		n, err := strconv.Atoi(cmd.Args[0])
-		if err != nil {
-			return fmt.Errorf("invalid limit: %w", err)
+		n, err := strconv.ParseInt(cmd.Args[0], 10, 32)
+		if err != nil || n < 1 {
+			return fmt.Errorf("limit must be a positive integer, got %q", cmd.Args[0])
 		}
-
 		limit = int32(n)
 	}
 
@@ -26,17 +24,26 @@ func handlerBrowse(s *state, cmd command, user database.User) error {
 		Limit:  limit,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to fetch posts: %w", err)
+		return fmt.Errorf("could not fetch posts: %w", err)
 	}
 
-	for _, post := range posts {
-		fmt.Printf("- Title: %s\n", post.Title)
-		if post.Description.Valid {
-			fmt.Printf("  - Description: %v\n", post.Description.String)
+	if len(posts) == 0 {
+		fmt.Println("No posts found. Run 'gator agg <duration>' to collect posts.")
+		return nil
+	}
+
+	for i, post := range posts {
+		if i > 0 {
+			fmt.Println()
 		}
 
+		fmt.Printf("Title:       %s\n", post.Title)
+		fmt.Printf("URL:         %s\n", post.Url)
 		if post.PublishedAt.Valid {
-			fmt.Printf("  - Published At: %v\n", post.PublishedAt.Time.Format(time.UnixDate))
+			fmt.Printf("Published:   %s\n", post.PublishedAt.Time.Format("2006-01-02 15:04"))
+		}
+		if post.Description.Valid {
+			fmt.Printf("Description: %s\n", post.Description.String)
 		}
 	}
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -13,43 +12,43 @@ import (
 
 func handlerLogin(s *state, cmd command) error {
 	if len(cmd.Args) == 0 {
-		return errors.New("error: expected a username")
+		return fmt.Errorf("usage: gator login <username>")
 	}
 
 	username := cmd.Args[0]
 
 	_, err := s.db.GetUser(context.Background(), username)
 	if err != nil {
-		log.Fatal("failed to login with the user: user not found")
+		log.Fatalf("user %q not found; run 'gator register %s' to create it", username, username)
 	}
 
 	s.cfg.SetUser(username)
 
-	fmt.Printf("user %s has been set.\n", username)
+	fmt.Printf("Logged in as %q.\n", username)
 
 	return nil
 }
 
 func handlerRegister(s *state, cmd command) error {
 	if len(cmd.Args) == 0 {
-		return errors.New("error: expected a username")
+		return fmt.Errorf("usage: gator register <username>")
 	}
 
 	username := cmd.Args[0]
 
-	user, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
+	_, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		Name:      username,
 	})
 	if err != nil {
-		log.Fatalf("failed to register the user: %v", err)
+		log.Fatalf("could not register user %q: %v", username, err)
 	}
 
 	s.cfg.SetUser(username)
 
-	fmt.Printf("user %v registerd successfully: %v", username, user)
+	fmt.Printf("Registered user %q and logged in.\n", username)
 
 	return nil
 }
@@ -57,25 +56,30 @@ func handlerRegister(s *state, cmd command) error {
 func handlerReset(s *state, cmd command) error {
 	err := s.db.DeleteAllUsers(context.Background())
 	if err != nil {
-		return errors.New("error: failed to reset")
+		return fmt.Errorf("could not reset database: %w", err)
 	}
 
-	fmt.Println("Reset successfully!")
+	fmt.Println("Database reset. Deleted all users and their data.")
 	return nil
 }
 
 func handlerUsers(s *state, cmd command) error {
 	users, err := s.db.GetUsers(context.Background())
 	if err != nil {
-		return errors.New("error: failed to get all users")
+		return fmt.Errorf("could not list users: %w", err)
+	}
+
+	if len(users) == 0 {
+		fmt.Println("No users registered. Run 'gator register <username>'.")
+		return nil
 	}
 
 	currentUser := s.cfg.CurrentUserName
 	for _, user := range users {
 		if user.Name == currentUser {
-			fmt.Println("*", user.Name, "(current)")
+			fmt.Printf("* %s (current)\n", user.Name)
 		} else {
-			fmt.Println("*", user.Name)
+			fmt.Printf("  %s\n", user.Name)
 		}
 	}
 

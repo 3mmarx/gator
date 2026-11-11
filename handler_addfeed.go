@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -12,15 +11,15 @@ import (
 
 func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 2 {
-		return errors.New("Usage: gator addfeed <name> <url>")
+		return fmt.Errorf("usage: gator addfeed <name> <url>")
 	}
 
 	name := cmd.Args[0]
-	url := cmd.Args[1]
+	feedURL := cmd.Args[1]
 
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
-		return fmt.Errorf("error: failed to create a feed: %v", err)
+		return fmt.Errorf("could not load current user %q: %w", s.cfg.CurrentUserName, err)
 	}
 
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
@@ -28,19 +27,19 @@ func handlerAddFeed(s *state, cmd command, user database.User) error {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		Name:      name,
-		Url:       url,
-		UserID:    user.ID,
+		Url:       feedURL,
+		UserID:    currentUser.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("error: failed to create a feed: %w", err)
+		return fmt.Errorf("could not add feed %q: %w", name, err)
 	}
 
-	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{ID: uuid.New(), CreatedAt: time.Now(), UpdatedAt: time.Now(), UserID: user.ID, FeedID: feed.ID})
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{ID: uuid.New(), CreatedAt: time.Now(), UpdatedAt: time.Now(), UserID: currentUser.ID, FeedID: feed.ID})
 	if err != nil {
-		return fmt.Errorf("error: failed to follow feed: %w", err)
+		return fmt.Errorf("could not follow feed %q: %w", name, err)
 	}
 
-	fmt.Println(feed)
+	fmt.Printf("Added feed %q and followed it.\n", feed.Name)
 
 	return nil
 }

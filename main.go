@@ -16,6 +16,9 @@ type state struct {
 }
 
 func main() {
+	log.SetFlags(0)
+	log.SetPrefix("gator: ")
+
 	cfg := config.Read()
 
 	db, err := sql.Open("postgres", cfg.DBUrl)
@@ -52,7 +55,7 @@ func main() {
 
 	args := os.Args
 	if len(args) < 2 {
-		log.Fatal("Usage: gator <command> [args...]")
+		log.Fatal("usage: gator <command> [arguments]")
 	}
 
 	command := command{

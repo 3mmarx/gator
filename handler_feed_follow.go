@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -12,19 +11,19 @@ import (
 
 func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 1 {
-		return errors.New("Usage: gator follow <url>")
+		return fmt.Errorf("usage: gator follow <url>")
 	}
 
-	feedUrl := cmd.Args[0]
+	feedURL := cmd.Args[0]
 
-	feed, err := s.db.GetFeedByURL(context.Background(), feedUrl)
+	feed, err := s.db.GetFeedByURL(context.Background(), feedURL)
 	if err != nil {
-		return fmt.Errorf("failed to follow feed: %s", err)
+		return fmt.Errorf("could not find feed %q: %w", feedURL, err)
 	}
 
 	user, err = s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
-		return fmt.Errorf("failed to follow feed: %s", err)
+		return fmt.Errorf("could not load current user %q: %w", s.cfg.CurrentUserName, err)
 	}
 
 	feedFollow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
@@ -35,10 +34,10 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 		FeedID:    feed.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to follow feed: %s", err)
+		return fmt.Errorf("could not follow feed %q: %w", feed.Name, err)
 	}
 
-	fmt.Printf("you followed \"%s\" feed successfully", feedFollow.FeedName)
+	fmt.Printf("Now following %q.\n", feedFollow.FeedName)
 
 	return nil
 }
