@@ -1,0 +1,17 @@
+# Compiled binary
+/gator
+
+# Local configuration (contains database credentials)
+.gatorconfig.json
+
+# macOS
+.DS_Store
+
+# Test and coverage artifacts
+*.test
+*.out
+coverage.html
+
+# Editor and IDE files
+.idea/
+.vscode/
