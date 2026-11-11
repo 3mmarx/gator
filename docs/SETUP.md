@@ -211,6 +211,55 @@ Without a limit, `browse` shows two posts:
 gator browse
 ```
 
+## Development
+
+Build the binary:
+
+```bash
+go build -o gator .
+./gator browse 10
+```
+
+`go run .` is useful while developing. It compiles and runs the program on every invocation.
+
+Regenerate the database layer after changing files in `sql/queries` or `sql/schema`:
+
+```bash
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+sqlc generate
+```
+
+Run the basic checks:
+
+```bash
+go build ./...
+go vet ./...
+```
+
+## Project Structure
+
+```text
+.
+├── main.go                  # Entry point and command registration
+├── commands.go              # Command type, registry, and dispatch
+├── middleware_loggedin.go   # Resolves the current user for protected commands
+├── rss_feed.go              # HTTP fetching and RSS/XML parsing
+├── handler_*.go             # One handler per CLI command
+├── internal/
+│   ├── config/              # ~/.gatorconfig.json handling
+│   └── database/            # sqlc-generated database code
+├── sql/
+│   ├── schema/              # Goose migrations
+│   └── queries/             # SQL queries used by sqlc
+├── docs/
+│   ├── SETUP.md             # Detailed setup and troubleshooting
+│   ├── demo.gif             # Terminal showcase used by the README
+│   └── demo.tape            # VHS script for the GIF
+├── sqlc.yaml
+├── go.mod
+└── go.sum
+```
+
 ## Troubleshooting
 
 | Problem | Fix |

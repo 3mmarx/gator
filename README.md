@@ -4,7 +4,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A terminal-based RSS feed aggregator written in Go. Gator lets multiple users add RSS feeds, follow feeds shared by others, collect posts into PostgreSQL, and browse the latest articles from the command line.
+A terminal-based RSS feed aggregator written in Go. Gator lets multiple users add RSS feeds, follow feeds shared by others, collect posts into PostgreSQL, and browse the latest articles from the command line. Built as part of the [Build a Blog Aggregator in Go](https://www.boot.dev/courses/build-blog-aggregator-golang) course on [Boot.dev](https://www.boot.dev/).
 
 ![Gator terminal demo showing users, feeds, following, and browse](docs/demo.gif)
 
@@ -21,43 +21,6 @@ A terminal-based RSS feed aggregator written in Go. Gator lets multiple users ad
 ## Tech Stack
 
 Go · PostgreSQL · sqlc · Goose · lib/pq · google/uuid
-
-## Quick Start
-
-Gator requires Go 1.27.3+ and PostgreSQL 14+. See [docs/SETUP.md](docs/SETUP.md) for platform-specific installation, database setup, and configuration.
-
-```bash
-git clone https://github.com/3mmarx/gator.git
-cd gator
-
-createdb gator
-# Create ~/.gatorconfig.json with your PostgreSQL connection string.
-# See docs/SETUP.md for the format and examples.
-
-go install github.com/pressly/goose/v3/cmd/goose@latest
-export PATH="$(go env GOPATH)/bin:$PATH"
-
-goose -dir sql/schema postgres \
-  "postgres://$(whoami)@localhost:5432/gator?sslmode=disable" up
-
-go run . register ammar
-go run . addfeed "Hacker News" "https://news.ycombinator.com/rss"
-go run . following
-```
-
-Start the aggregator in one terminal:
-
-```bash
-go run . agg 1m
-```
-
-Browse the latest posts in another:
-
-```bash
-go run . browse 10
-```
-
-These examples use `go run .` because they assume you are in a clone of the repository. If you installed the binary, replace `go run .` with `gator`.
 
 ## Commands
 
@@ -95,77 +58,11 @@ erDiagram
     FEEDS ||--o{ POSTS : contains
 ```
 
-- `users` — registered accounts with unique names
-- `feeds` — RSS feeds, each owned by a user, with a nullable `last_fetched_at`
-- `feed_follows` — many-to-many follows between users and feeds
-- `posts` — fetched articles with a unique URL for deduplication
-
 The full schema lives in [`sql/schema`](sql/schema), and the queries used to generate the Go database layer live in [`sql/queries`](sql/queries).
 
-## Project Structure
+## Running Locally
 
-```text
-.
-├── main.go                  # Entry point and command registration
-├── commands.go              # Command type, registry, and dispatch
-├── middleware_loggedin.go   # Resolves the current user for protected commands
-├── rss_feed.go              # HTTP fetching and RSS/XML parsing
-├── handler_*.go             # One handler per CLI command
-├── internal/
-│   ├── config/              # ~/.gatorconfig.json handling
-│   └── database/            # sqlc-generated database code
-├── sql/
-│   ├── schema/              # Goose migrations
-│   └── queries/             # SQL queries used by sqlc
-├── docs/
-│   ├── SETUP.md             # Detailed setup and troubleshooting
-│   ├── demo.gif             # Terminal showcase used by this README
-│   └── demo.tape            # VHS script for the GIF
-├── sqlc.yaml
-├── go.mod
-└── go.sum
-```
-
-## Development
-
-Build the binary:
-
-```bash
-go build -o gator .
-./gator browse 10
-```
-
-`go run .` is useful while developing. It compiles and runs the program on every invocation.
-
-Regenerate the database layer after changing files in `sql/queries` or `sql/schema`:
-
-```bash
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-sqlc generate
-```
-
-Run the basic checks:
-
-```bash
-go build ./...
-go vet ./...
-```
-
-## Troubleshooting
-
-| Problem | Fix |
-| --- | --- |
-| `could not read config file` | Create `~/.gatorconfig.json` as described in [docs/SETUP.md](docs/SETUP.md#configuration). |
-| `connect: connection refused` | Start PostgreSQL, for example `brew services start postgresql@18` or `sudo service postgresql start`. |
-| `pq: database "gator" does not exist` | Run `createdb gator`. |
-| `pq: relation "users" does not exist` | Apply the migrations with Goose. |
-| `zsh: command not found: gator` | Add `$(go env GOPATH)/bin` to your `PATH`. |
-
-More problems and fixes are covered in [docs/SETUP.md](docs/SETUP.md#troubleshooting).
-
-## Acknowledgements
-
-Gator was built as part of the [Build a Blog Aggregator in Go](https://www.boot.dev/courses/build-blog-aggregator-golang) course on [Boot.dev](https://www.boot.dev/).
+Gator requires Go 1.27.3+ and PostgreSQL 14+. Setup, configuration, and troubleshooting are in [docs/SETUP.md](docs/SETUP.md).
 
 ## License
 
