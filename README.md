@@ -20,7 +20,6 @@ A terminal-based RSS feed aggregator written in Go. Gator lets multiple users ad
 - [Development](#development)
 - [How It Works](#how-it-works)
 - [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
 
@@ -365,18 +364,9 @@ go vet ./...
 | `no following feeds` or no posts from `browse` | Add or follow feeds, then run `gator agg` for a while. |
 | `duplicate key value violates unique constraint` when adding a feed | The URL is already registered. Use `gator follow <url>` instead. |
 
-## Contributing
-
-Issues and pull requests are welcome. To contribute:
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Make your changes and run `go build ./...` and `go vet ./...`.
-4. Open a pull request with a clear description of the change.
-
 ## Acknowledgements
 
-Gator was built as part of the [Boot.dev](https://www.boot.dev/) "Build a Blog Aggregator in Go" guided project.
+Gator was built as part of the [Build a Blog Aggregator in Go](https://www.boot.dev/courses/build-blog-aggregator-golang) course on [Boot.dev](https://www.boot.dev/).
 
 ## License
 
